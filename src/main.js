@@ -22,6 +22,12 @@ router.beforeEach((to, from, next) => {
         // query: { redirect: to.fullPath }
       });
     } else {
+      let isVoting = store.getters["auth/isVoting"];
+      if(to.matched.some(record => record.meta.requiresVote)){
+        if(!isVoting){
+          next({ name: "Dashboard" });
+        }
+      }
       next();
     }
   } else if (to.matched.some(record => record.meta.requiresVisitor)) {

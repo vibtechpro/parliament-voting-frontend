@@ -33,8 +33,8 @@ import Header from "@/components/Header";
 import DashboardCard from '@/components/DashboardCard';
 import { mapGetters } from "vuex";
 export default {
-  name: "Dashboard",
-  title: "Dashboard",
+  name: "BallotSheet",
+  title: `Ballot sheet - voting`,
   components: {
     Header,
     DashboardCard

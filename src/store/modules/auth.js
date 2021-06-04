@@ -6,7 +6,8 @@ export default {
     token: localStorage.getItem("token") || null,
     refresh: localStorage.getItem("refresh") || null,
     authUser: localStorage.getItem("user") || JSON.stringify({}),
-    responseText: null
+    responseText: null,
+    voting: localStorage.getItem("voting") || false
   },
   getters: {
     getTesponseText: state => {
@@ -17,6 +18,9 @@ export default {
     },
     getAuthUser: state => {
       return JSON.parse(state.authUser);
+    },
+    isVoting: state => {
+      return state.voting !== false;
     }
   },
   mutations: {
@@ -29,6 +33,9 @@ export default {
     },
     SET_USER(state, payload) {
       state.authUser = payload;
+    },
+    SET_VOTE(state, payload) {
+      state.voting = payload;
     }
   },
   actions: {
@@ -63,10 +70,11 @@ export default {
         return error;
       }
     },
+
     logoutUser: async ({ commit }) => {
       let refresh = localStorage.getItem("refresh");
       try {
-        let response = await http.post("auth/logout/", {
+        let response = await http.post("accounts/logout/", {
           refresh: refresh
         });
         commit("SET_TOKEN", { access: null, refresh: null });
@@ -80,6 +88,7 @@ export default {
         return error;
       }
     },
+
     clearLogin: async ({ commit }) => {
       commit("SET_TOKEN", { access: null, refresh: null });
       commit("SET_USER", null);
@@ -88,14 +97,42 @@ export default {
       localStorage.removeItem("user");
       delete http.defaults.headers.common["Authorization"];
     },
-    //UPDATE USER
-    updateUser: async ({ commit }, payload) => {
+    
+    sendOTP: async ({ commit }, payload) => {
       try {
-        let response = await http.put("auth/user/", payload);
-        commit("SET_USER", response.data);
-        localStorage.setItem("user", JSON.stringify(response.data));
+        let response = await http.post("accounts/otp/send", payload);
+        commit("SET_RESPONSETEXT", {
+          success: 'OTP sent successful'
+        });
         return response;
       } catch (error) {
+        if (error.response.data.phone) {
+          commit("SET_RESPONSETEXT", {
+            error: "Phone number was not sent."
+          });
+        }
+        return error;
+      }
+    },
+    
+    verifyOTP: async ({ commit }, payload) => {
+      try {
+        let response = await http.post("accounts/otp/verify", payload);
+        commit("SET_VOTE", true);
+        localStorage.setItem('voting', true);
+        return response;
+      } catch (error) {
+        if (error.response.data.phone || error.response.data.code) {
+          commit("SET_RESPONSETEXT", {
+            error: "Something went wrong with your fields."
+          });
+        }
+        if(!error.response.data.success){
+          commit("SET_RESPONSETEXT", {
+            error: error.response.data.message
+          });
+        }
+        localStorage.removeItem('voting');
         return error;
       }
     }

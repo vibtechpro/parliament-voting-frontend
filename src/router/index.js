@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Login from "../views/auth/Login.vue";
 import Dashboard from "../views/users/Dashboard.vue";
+import BallotSheet from "../views/users/BallotSheet.vue";
 import Otp from "../views/auth/Otp.vue";
 
 Vue.use(VueRouter);
@@ -24,6 +25,12 @@ const routes = [
     name: "Otp",
     component: Otp,
     meta: { requiresAuth: true, showBackgroundImage: true }
+  },
+  {
+    path: "/ballot-sheet",
+    name: "BallotSheet",
+    component: BallotSheet,
+    meta: { requiresAuth: true, requiresVote: true, showMenubar: true, showBackgroundImage: false, menuBackgroundColor: "green darken-4"  }
   },
 ];
 
